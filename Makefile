@@ -6,7 +6,7 @@ TARGET_SEMANTIC_RC := $(TARGET_SEMANTIC_VERSION)-rc.$(TARGET_BUILD)
 ENVFILE := .env
 
 preaction: .env env-TARGET_RESISTRY env-TARGET_REGISTRY_TOKEN env-TARGET_REGISTRY_USER
-	$(DOCKER_COMPOSE_RUN) 3m make _login
+	docker login --username $(TARGET_REGISTRY_USER) --password "$(TARGET_REGISTRY_TOKEN)" "$(TARGET_REGISTRY)"
 .PHONY: preaction
 
 runaction: .env env-SOURCE_GROUP env-SOURCE_IMAGE env-SOURCE_RESISTRY env-SOURCE_VERSION env-TARGET_GROUP env-TARGET_IMAGE env-TARGET_RESISTRY env-TARGET_SEMANTIC_RC env-TARGET_SEMANTIC_VERSION
@@ -18,15 +18,7 @@ postaction: .env env-TARGET_RESISTRY
 	$(DOCKER_COMPOSE_RUN) 3m make _logout
 .PHONY: postaction
 
-_login:
-	echo "INFO: check logins"
-	docker login --username $(TARGET_REGISTRY_USER) --password "$(TARGET_REGISTRY_TOKEN)"  "$(TARGET_REGISTRY)"
-	if [ -e "/root/.docker/config.json" ] ; then cat /root/.docker/config.json; fi
-.PHONY: _login
-
 _build:
-	echo "INFO: check logins"
-	if [ -e "/root/.docker/config.json" ] ; then cat /root/.docker/config.json; fi
 	echo "INFO: docker build"
 	docker build \
 		--no-cache \
@@ -36,12 +28,11 @@ _build:
 	  --build-arg SOURCE_VERSION=$(SOURCE_VERSION) \
 	  --tag $(TARGET_REGISTRY)$(TARGET_GROUP)$(TARGET_IMAGE):$(TARGET_SEMANTIC_RC) \
 	  --tag $(TARGET_REGISTRY)$(TARGET_GROUP)$(TARGET_IMAGE):$(TARGET_SEMANTIC_VERSION) \
-	  --file Dockerfile  \
+	  --file Dockerfile \
 	  .
 .PHONY: _build
 
 _publish:
-	if [ -e "$(_DOCKER_HOME)/config.json" ] ; then cat $(_DOCKER_HOME)/config.json; fi
 	echo "INFO: docker images"
 	docker images
 	echo "INFO: docker push"
