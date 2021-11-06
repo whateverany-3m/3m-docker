@@ -6,7 +6,7 @@ TARGET_SEMANTIC_RC := $(TARGET_SEMANTIC_VERSION)-rc.$(TARGET_BUILD)
 ENVFILE := .env
 
 preaction: .env env-TARGET_RESISTRY env-TARGET_REGISTRY_TOKEN env-TARGET_REGISTRY_USER
-	$(DOCKER_COMPOSE_RUN) 3m make _login
+	docker login --username ${TARGET_REGISTRY_USER} --password "${TARGET_REGISTRY_TOKEN}"  "${TARGET_REGISTRY}"
 .PHONY: preaction
 
 runaction: .env env-SOURCE_GROUP env-SOURCE_IMAGE env-SOURCE_RESISTRY env-SOURCE_VERSION env-TARGET_GROUP env-TARGET_IMAGE env-TARGET_RESISTRY env-TARGET_SEMANTIC_RC env-TARGET_SEMANTIC_VERSION
@@ -17,13 +17,6 @@ runaction: .env env-SOURCE_GROUP env-SOURCE_IMAGE env-SOURCE_RESISTRY env-SOURCE
 postaction: .env env-TARGET_RESISTRY
 	$(DOCKER_COMPOSE_RUN) 3m make _logout
 .PHONY: postaction
-
-_login:
-	echo "INFO: docker login"
-	docker login --username ${TARGET_REGISTRY_USER} --password "${TARGET_REGISTRY_TOKEN}"  "${TARGET_REGISTRY}"
-	echo "INFO: config.json"
-	cat ${_DOCKER_HOME}/config.json.
-.PHONY: _login
 
 _build:
 	echo "INFO: config.json"
