@@ -19,8 +19,6 @@ postaction: .env env-TARGET_RESISTRY
 .PHONY: postaction
 
 _build:
-	echo "INFO: config.json"
-	cat ${_DOCKER_HOME}/config.json.
 	echo "INFO: docker build"
 	docker build \
 		--no-cache \
