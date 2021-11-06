@@ -21,7 +21,7 @@ jobs:
         echo "TARGET_REGISTRY_USER=${{ github.actor }}" >> "${GITHUB_ENV}"
         #
         echo "INFO: GITHUB_ENV:"
-        ln -s "${GITHUB_ENV}" "${ENVFILE}"
+        cp "${GITHUB_ENV}" "${ENVFILE}"
     - name: preaction
       run: |
         set -x
