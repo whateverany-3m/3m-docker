@@ -6,10 +6,16 @@ TARGET_SEMANTIC_RC := $(TARGET_SEMANTIC_VERSION)-rc.$(TARGET_BUILD)
 ENVFILE := .env
 
 preaction: .env env-TARGET_RESISTRY env-TARGET_REGISTRY_TOKEN env-TARGET_REGISTRY_USER
-	docker login --username ${TARGET_REGISTRY_USER} --password "${TARGET_REGISTRY_TOKEN}"  "${TARGET_REGISTRY}"
+	docker login --username $(TARGET_REGISTRY_USER) --password "$(TARGET_REGISTRY_TOKEN)"  "$(TARGET_REGISTRY)"
+	@if [ -e $(_DOCKER_HOME)/config.json ] ; then
+	  cat $(_DOCKER_HOME)/config.json 
+	fi
 .PHONY: preaction
 
 runaction: .env env-SOURCE_GROUP env-SOURCE_IMAGE env-SOURCE_RESISTRY env-SOURCE_VERSION env-TARGET_GROUP env-TARGET_IMAGE env-TARGET_RESISTRY env-TARGET_SEMANTIC_RC env-TARGET_SEMANTIC_VERSION
+	@if [ -e $(_DOCKER_HOME)/config.json ] ; then
+	  cat $(_DOCKER_HOME)/config.json 
+	fi
 	$(DOCKER_COMPOSE_RUN) 3m make _build
 	$(DOCKER_COMPOSE_RUN) 3m make _publish
 .PHONY: .runaction
@@ -19,6 +25,9 @@ postaction: .env env-TARGET_RESISTRY
 .PHONY: postaction
 
 _build:
+	@if [ -e $(_DOCKER_HOME)/config.json ] ; then
+	  cat $(_DOCKER_HOME)/config.json 
+	fi
 	echo "INFO: docker build"
 	docker build \
 		--no-cache \
@@ -33,6 +42,9 @@ _build:
 .PHONY: _build
 
 _publish:
+	@if [ -e $(_DOCKER_HOME)/config.json ] ; then
+	  cat $(_DOCKER_HOME)/config.json 
+	fi
 	echo "INFO: docker images"
 	docker images
 	echo "INFO: docker push"
@@ -43,7 +55,7 @@ _publish:
 
 _logout: .env env-TARGET_RESISTRY
 	echo "INFO: docker logout"
-	docker logout "${TARGET_REGISTRY}"
+	docker logout "$(TARGET_REGISTRY)"
 .PHONY: _logout
 
 shell: .env env-DOCKER_COMPOSE_RUN
