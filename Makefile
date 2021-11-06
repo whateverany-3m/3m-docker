@@ -5,23 +5,24 @@ TARGET_SEMANTIC_VERSION := $(TARGET_VERSION)
 TARGET_SEMANTIC_RC := $(TARGET_SEMANTIC_VERSION)-rc.$(TARGET_BUILD)
 ENVFILE := .env
 
-preaction: .env env-TARGET_RESISTRY env-TARGET_REGISTRY_TOKEN env-TARGET_REGISTRY_USER
-	docker login --username $(TARGET_REGISTRY_USER) --password "$(TARGET_REGISTRY_TOKEN)" "$(TARGET_REGISTRY)"
+preaction: .env env-TARGET_REGISTRY env-TARGET_REGISTRY_TOKEN env-TARGET_REGISTRY_USER
+	echo "$(TARGET_REGISTRY_TOKEN)" | docker login --username $(TARGET_REGISTRY_USER) --password-stdin "$(TARGET_REGISTRY)"
 	$(DOCKER_COMPOSE_RUN) 3m make _login
 .PHONY: preaction
 
-runaction: .env env-SOURCE_GROUP env-SOURCE_IMAGE env-SOURCE_RESISTRY env-SOURCE_VERSION env-TARGET_GROUP env-TARGET_IMAGE env-TARGET_RESISTRY env-TARGET_SEMANTIC_RC env-TARGET_SEMANTIC_VERSION
+runaction: .env env-SOURCE_GROUP env-SOURCE_IMAGE env-SOURCE_REGISTRY env-SOURCE_VERSION env-TARGET_GROUP env-TARGET_IMAGE env-TARGET_REGISTRY env-TARGET_SEMANTIC_RC env-TARGET_SEMANTIC_VERSION
+	$(DOCKER_COMPOSE_RUN) 3m make _login
 	$(DOCKER_COMPOSE_RUN) 3m make _build
 	$(DOCKER_COMPOSE_RUN) 3m make _publish
 .PHONY: .runaction
 
-postaction: .env env-TARGET_RESISTRY
+postaction: .env env-TARGET_REGISTRY
 	$(DOCKER_COMPOSE_RUN) 3m make _logout
 .PHONY: postaction
 
 _login:
 	echo "INFO: docker login"
-	docker login --username $(TARGET_REGISTRY_USER) --password "$(TARGET_REGISTRY_TOKEN)" "$(TARGET_REGISTRY)"
+	echo "$(TARGET_REGISTRY_TOKEN)" | docker login --username $(TARGET_REGISTRY_USER) --password-stdin "$(TARGET_REGISTRY)"
 .PHONY: _login
 
 _build:
@@ -47,7 +48,7 @@ _publish:
 	docker push $(TARGET_REGISTRY)$(TARGET_GROUP)$(TARGET_IMAGE):$(TARGET_SEMANTIC_VERSION)
 .PHONY: _publish
 
-_logout: .env env-TARGET_RESISTRY
+_logout: .env env-TARGET_REGISTRY
 	echo "INFO: docker logout"
 	docker logout "$(TARGET_REGISTRY)"
 .PHONY: _logout
@@ -64,5 +65,6 @@ shell-root: .env env-DOCKER_COMPOSE_RUN
 	echo $(ENVFILE)
 
 env-%:
-	echo "INFO: Check if $* is not empty"
+	if [ "${$*}" = "" ] ; then echo "ERROR: $* is not set"; exit 1; fi
+	echo "INFO: $*=${$*}"
 
