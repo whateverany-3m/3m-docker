@@ -19,10 +19,16 @@ postaction: .env env-TARGET_RESISTRY
 .PHONY: postaction
 
 _login:
+	echo "INFO: docker login"
 	docker login --username ${TARGET_REGISTRY_USER} --password "${TARGET_REGISTRY_TOKEN}"  "${TARGET_REGISTRY}"
+	echo "INFO: config.json"
+	cat ${_DOCKER_HOME}/config.json.
 .PHONY: _login
 
 _build:
+	echo "INFO: config.json"
+	cat ${_DOCKER_HOME}/config.json.
+	echo "INFO: docker build"
 	docker build \
 		--no-cache \
 	  --build-arg SOURCE_GROUP=$(SOURCE_GROUP) \
@@ -36,12 +42,16 @@ _build:
 .PHONY: _build
 
 _publish:
+	echo "INFO: docker images"
 	docker images
+	echo "INFO: docker push"
 	docker push $(TARGET_REGISTRY)$(TARGET_GROUP)$(TARGET_IMAGE):$(TARGET_SEMANTIC_RC)
+	echo "INFO: docker push"
 	docker push $(TARGET_REGISTRY)$(TARGET_GROUP)$(TARGET_IMAGE):$(TARGET_SEMANTIC_VERSION)
 .PHONY: _publish
 
 _logout: .env env-TARGET_RESISTRY
+	echo "INFO: docker logout"
 	docker logout "${TARGET_REGISTRY}"
 .PHONY: _logout
 
