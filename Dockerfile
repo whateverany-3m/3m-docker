@@ -5,11 +5,9 @@ ARG SOURCE_VERSION
 
 FROM $SOURCE_REGISTRY$SOURCE_GROUP$SOURCE_IMAGE:$SOURCE_VERSION
 
-#USER root
-
 COPY src/rootfs/ /
 
-RUN echo "INFO: begin RUN" ;\
+RUN set -x ;\
+  echo "INFO: begin RUN" ;\
   echo "INFO: end RUN"
 
-#USER rootless
